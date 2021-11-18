@@ -1,0 +1,14 @@
+/* ============================================================================
+   This file contains the configurations for test dependencies project
+   ============================================================================
+
+   Included from: "${rootProject.projectDir}/build.gradle"
+   ============================================================================
+ */
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "org.springframework.boot:spring-boot-starter-test"
+}

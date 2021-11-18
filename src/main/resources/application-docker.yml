@@ -1,0 +1,52 @@
+server:
+  port: 8080
+
+management:
+  endpoint:
+    gateway:
+      enabled: true
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
+spring:
+  cloud:
+    gateway:
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+
+      routes:
+        - id: sds-identity-provider
+          uri: ${IDENTITY_PROVIDER_URI}
+          predicates:
+            - Path=/identity-provider/**
+          filters:
+            - RewritePath=/identity-provider,/
+            - GatewayAuthorizationFilter
+
+        - id: sds-back-office
+          uri: ${BACK_OFFICE_URI}
+          predicates:
+            - Path=/back-office/**
+          filters:
+            - RewritePath=/back-office,/
+            - GatewayAuthorizationFilter
+
+        - id: sds-front-office
+          uri: ${FRONT_OFFICE_URI}
+          predicates:
+            - Path=/front-office/**
+          filters:
+            - RewritePath=/front-office,/
+            - GatewayAuthorizationFilter

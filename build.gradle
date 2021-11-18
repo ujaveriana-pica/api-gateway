@@ -1,0 +1,27 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:1.0.11.RELEASE"
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.5.6")
+    }
+}
+
+def gradlePath = "${rootProject.projectDir}${project.property('gradle.path')}"
+apply from: "${gradlePath}/build-plugins.gradle"
+apply from: "${gradlePath}/build-config.gradle"
+apply from: "${gradlePath}/build-dependencies.gradle"
+apply from: "${gradlePath}/build-test-dependencies.gradle"
+
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.cloud:spring-cloud-dependencies:2020.0.4")
+    }
+}
+
+test {
+    useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
