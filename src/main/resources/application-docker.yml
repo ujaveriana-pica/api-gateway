@@ -40,7 +40,6 @@ spring:
           predicates:
             - Path=/back-office/**
           filters:
-            - RewritePath=/back-office,/
             - GatewayAuthorizationFilter
 
         - id: sds-front-office
@@ -48,5 +47,4 @@ spring:
           predicates:
             - Path=/front-office/**
           filters:
-            - RewritePath=/front-office,/
             - GatewayAuthorizationFilter
