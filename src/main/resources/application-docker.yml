@@ -25,6 +25,7 @@ spring:
               - PUT
               - DELETE
               - PATCH
+              - OPTIONS
 
       routes:
         - id: sds-identity-provider
