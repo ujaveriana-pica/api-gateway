@@ -1,5 +1,7 @@
 package com.javeriana.ares.apigateway.crosscutting;
 
+import org.springframework.cloud.gateway.filter.GatewayFilter;
+import org.springframework.cloud.gateway.filter.factory.AbstractNameValueGatewayFilterFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
@@ -17,7 +19,7 @@ import reactor.core.publisher.Mono;
  * @author Thirumal
  */
 @Configuration
-public class CorsConfiguration {
+public class CorsConfiguration extends AbstractNameValueGatewayFilterFactory {
 
     private static final String ALLOWED_HEADERS = "x-requested-with, authorization, Content-Type, Content-Length, Authorization, credential, X-XSRF-TOKEN";
     private static final String ALLOWED_METHODS = "GET, PUT, POST, DELETE, OPTIONS, PATCH";
@@ -28,20 +30,34 @@ public class CorsConfiguration {
     public WebFilter corsFilter() {
         return (ServerWebExchange ctx, WebFilterChain chain) -> {
             ServerHttpRequest request = ctx.getRequest();
-            if (CorsUtils.isCorsRequest(request)) {
-                ServerHttpResponse response = ctx.getResponse();
-                HttpHeaders headers = response.getHeaders();
-                headers.add("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
-                headers.add("Access-Control-Allow-Methods", ALLOWED_METHODS);
-                headers.add("Access-Control-Max-Age", MAX_AGE); //OPTION how long the results of a preflight request (that is the information contained in the Access-Control-Allow-Methods and Access-Control-Allow-Headers headers) can be cached.
-                headers.add("Access-Control-Allow-Headers",ALLOWED_HEADERS);
-                if (request.getMethod() == HttpMethod.OPTIONS) {
-                    response.setStatusCode(HttpStatus.OK);
-                    return Mono.empty();
-                }
+
+            ServerHttpResponse response = ctx.getResponse();
+            HttpHeaders headers = response.getHeaders();
+            headers.add("Access-Control-Allow-Origin", ALLOWED_ORIGIN);
+            headers.add("Access-Control-Allow-Methods", ALLOWED_METHODS);
+            headers.add("Access-Control-Max-Age", MAX_AGE); //OPTION how long the results of a preflight request (that is the information contained in the Access-Control-Allow-Methods and Access-Control-Allow-Headers headers) can be cached.
+            headers.add("Access-Control-Allow-Headers",ALLOWED_HEADERS);
+            if (request.getMethod() == HttpMethod.OPTIONS) {
+                response.setStatusCode(HttpStatus.OK);
+                return Mono.empty();
             }
+
             return chain.filter(ctx);
         };
     }
 
+    @Override
+    public GatewayFilter apply(NameValueConfig config) {
+        return (exchange, chain) -> {
+            ServerHttpRequest request = exchange.getRequest()
+                    .mutate()
+                    .header("Access-Control-Allow-Origin", ALLOWED_ORIGIN)
+                    .header("Access-Control-Allow-Methods", ALLOWED_METHODS)
+                    .header("Access-Control-Max-Age", MAX_AGE)
+                    .header("Access-Control-Allow-Headers",ALLOWED_HEADERS)
+                    .build();
+            ServerWebExchange exchange1 = exchange.mutate().request(request).build();
+            return chain.filter(exchange1);
+        };
+    }
 }
